@@ -72,6 +72,65 @@ class TestCVSSCalculator(unittest.TestCase):
         self.assertEqual(details["severity"], "Critical")
 
 
+    def test_all_scope_privilege_combinations(self):
+        # Expected scores for a fixed set of metrics.
+        # Only Scope and Privileges Required change.
+        cases = [
+            ("U", "N", 8.2),
+            ("U", "L", 7.1),
+            ("U", "H", 5.5),
+            ("C", "N", 9.3),
+            ("C", "L", 8.5),
+            ("C", "H", 7.6),
+        ]
+
+        for scope, pr, expected_score in cases:
+            with self.subTest(scope=scope, privileges=pr):
+                score = calculate_base_score(
+                    "N", "L", pr, "N", scope, "H", "L", "N"
+                )
+                self.assertEqual(score, expected_score)
+
+
+    def test_minimum_score(self):
+        score = calculate_base_score(
+            "N", "L", "N", "N", "U", "N", "N", "N"
+        )
+        self.assertEqual(score, 0.0)
+
+    def test_maximum_score(self):
+        score = calculate_base_score(
+            "N", "L", "N", "N", "C", "H", "H", "H"
+        )
+        self.assertEqual(score, 10.0)
+
+
+    def test_severity_boundaries(self):
+        cases = [
+            (0.0, "None"),
+            (0.1, "Low"),
+            (3.9, "Low"),
+            (4.0, "Medium"),
+            (6.9, "Medium"),
+            (7.0, "High"),
+            (8.9, "High"),
+            (9.0, "Critical"),
+            (10.0, "Critical"),
+        ]
+
+        for score, expected in cases:
+            with self.subTest(score=score):
+                self.assertEqual(
+                    severity_rating(score), expected
+                )
+
+
+    def test_invalid_privileges_for_scope(self):
+        with self.assertRaises(ValueError):
+            calculate_base_score(
+                "N", "L", "X", "N", "U", "H", "H", "H"
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

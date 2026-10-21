@@ -11,7 +11,12 @@ from the eight Base metrics.
 - Severity classification
 - CVSS vector string generation
 - Input validation
-- Automated unit tests
+- Automated unit tests using unittest
+- Tests for all Scope and Privileges Required combinations
+- Minimum and maximum score validation
+- Severity boundary tests
+- Invalid input validation
+- Reference score verification against FIRST CVSS v3.1
 
 ## Requirements
 
