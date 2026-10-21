@@ -1,6 +1,10 @@
 
-from cvss import calculate_base_score, create_vector, severity_rating
-
+from cvss import (
+    calculate_base_score,
+    calculate_base_score_details,
+    create_vector,
+    severity_rating,
+)
 
 def ask_metric(title, options):
     """Display choices and return the selected metric value."""
@@ -69,8 +73,9 @@ def main():
         "H": "High",
     })
 
+
     try:
-        score = calculate_base_score(
+        details = calculate_base_score_details(
             av, ac, pr, ui, scope, c, i, a
         )
 
@@ -79,13 +84,25 @@ def main():
         )
 
         print("\n" + "=" * 45)
-        print(f"CVSS Base Score: {score:.1f}")
-        print(f"Severity: {severity_rating(score)}")
+        print("       CVSS CALCULATION BREAKDOWN")
+        print("=" * 45)
+
+        print(f"Impact Sub-Score (ISS):       {details['iss']:.4f}")
+        print(f"Impact Score:                 {details['impact']:.4f}")
+        print(
+            "Exploitability Sub-Score:     "
+            f"{details['exploitability']:.4f}"
+        )
+
+        print("-" * 45)
+        print(f"CVSS Base Score:              {details['score']:.1f}")
+        print(f"Severity:                     {details['severity']}")
         print(f"Vector: {vector}")
         print("=" * 45)
 
     except ValueError as error:
         print(f"Error: {error}")
+
 
 
 if __name__ == "__main__":

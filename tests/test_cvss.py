@@ -1,8 +1,8 @@
-
 import unittest
 
 from cvss import (
     calculate_base_score,
+    calculate_base_score_details,
     create_vector,
     severity_rating,
 )
@@ -56,6 +56,21 @@ class TestCVSSCalculator(unittest.TestCase):
             vector,
             "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
         )
+
+
+    def test_calculation_breakdown(self):
+        details = calculate_base_score_details(
+            "N", "L", "N", "N", "U", "H", "H", "H"
+        )
+
+        self.assertAlmostEqual(details["iss"], 0.914816, places=6)
+        self.assertAlmostEqual(details["impact"], 5.8731, places=3)
+        self.assertAlmostEqual(
+            details["exploitability"], 3.8870, places=3
+        )
+        self.assertEqual(details["score"], 9.8)
+        self.assertEqual(details["severity"], "Critical")
+
 
 
 if __name__ == "__main__":

@@ -109,6 +109,55 @@ def calculate_base_score(av, ac, pr, ui, scope, c, i, a):
     return roundup(base_score)
 
 
+def calculate_base_score_details(av, ac, pr, ui, scope, c, i, a):
+    """Return the CVSS v3.1 score and its intermediate calculations."""
+
+    # Validate metrics using the existing scoring function.
+    calculate_base_score(av, ac, pr, ui, scope, c, i, a)
+
+    # Calculate the Impact Sub-Score (ISS).
+    iss = 1 - (
+        (1 - IMPACT_VALUE[c])
+        * (1 - IMPACT_VALUE[i])
+        * (1 - IMPACT_VALUE[a])
+    )
+
+    # Calculate the Impact Score.
+    if scope == "U":
+        impact = 6.42 * iss
+    else:
+        impact = (
+            7.52 * (iss - 0.029)
+            - 3.25 * ((iss - 0.02) ** 15)
+        )
+
+    # Calculate the Exploitability Sub-Score.
+    exploitability = (
+        8.22
+        * ATTACK_VECTOR[av]
+        * ATTACK_COMPLEXITY[ac]
+        * PRIVILEGES_REQUIRED[scope][pr]
+        * USER_INTERACTION[ui]
+    )
+
+    # Calculate the final Base Score using the same rules.
+    if impact <= 0:
+        score = 0.0
+    elif scope == "U":
+        score = roundup(min(impact + exploitability, 10))
+    else:
+        score = roundup(min(1.08 * (impact + exploitability), 10))
+
+    return {
+        "iss": iss,
+        "impact": impact,
+        "exploitability": exploitability,
+        "score": score,
+        "severity": severity_rating(score),
+    }
+
+
+
 def create_vector(av, ac, pr, ui, scope, c, i, a):
     """Create a CVSS v3.1 Base vector string."""
     # Validate metrics using the same rules as the calculator.
